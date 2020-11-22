@@ -1,19 +1,27 @@
+//connects to the server
 const socket = io('/')
+//Displays video on the Front end
 const videoGrid = document.getElementById('video-grid')
+//Creates a peer server that allows us to connect via peer IDS
 const myPeer = new Peer(undefined, {
   path: '/peerjs',
   host: '/',
   port: '443'
 })
 let myVideoStream;
+//rEFERENCES TO VIDEO
 const myVideo = document.createElement('video')
+//mUTES VIDEO TO OURSELVES
 myVideo.muted = true;
+//Saves all users that joined the call
 const peers = {}
+//Allows us to communicate with peers 
 navigator.mediaDevices.getUserMedia({
   video: true,
   audio: true
 }).then(stream => {
   myVideoStream = stream;
+  
   addVideoStream(myVideo, stream)
   myPeer.on('call', call => {
     call.answer(stream)
@@ -22,7 +30,7 @@ navigator.mediaDevices.getUserMedia({
       addVideoStream(video, userVideoStream)
     })
   })
-
+  //Allow our video to connect to new users
   socket.on('user-connected', userId => {
     connectToNewUser(userId, stream)
   })
@@ -48,7 +56,7 @@ socket.on('user-disconnected', userId => {
 myPeer.on('open', id => {
   socket.emit('join-room', ROOM_ID, id)
 })
-
+//Appends video onto grid
 function connectToNewUser(userId, stream) {
   const call = myPeer.call(userId, stream)
   const video = document.createElement('video')
